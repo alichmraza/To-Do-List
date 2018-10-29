@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List</title>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
+
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyCKXfbCXJQwqqIFYXK6H9y2tUL01pzof00",
+            authDomain: "test-project-e851a.firebaseapp.com",
+            databaseURL: "https://test-project-e851a.firebaseio.com",
+            projectId: "test-project-e851a",
+            storageBucket: "test-project-e851a.appspot.com",
+            messagingSenderId: "306187588624"
+        };
+        firebase.initializeApp(config);
+    </script>
+</head>
+<body>
+<h1>To Do List</h1>
+<input type="text" placeholder="List Item" id="input">
+<button onclick="addItem()"> Add Item</button>
+<ol id="list"></ol>
+
+
+<script>
+    // Initialize Cloud Firestore through Firebase
+    var db = firebase.firestore();
+
+    // Disable deprecated features
+    db.settings({
+        timestampsInSnapshots: true
+    });
+
+    var list = document.getElementById('list');
+    var input = document.getElementById('input');
+    var listItems = [];
+
+    function addItem() {
+        db.collection('todo').add({
+            todo: input.value,
+            time: Date.now()
+        })
+        input.value = "";
+    }
+    function updateList() {
+        list.innerHTML = '';
+        for (var i = 0; i < listItems.length; i++) {
+            var li = document.createElement('LI');
+            li.innerText = listItems[i];
+            list.appendChild(li);
+        }
+    }
+
+    db.collection('todo').onSnapshot(function (docs) {
+        docs.docChanges().forEach(function (change) {
+            var d = change.doc.data();
+            d.id = change.doc.id;
+            if (change.type === "added") {
+                console.log('item:', change.doc.data());
+                var li = document.createElement('LI');
+                li.innerText = d.todo;
+                list.appendChild(li);
+            }
+        })
+    });
+
+
+</script>
+
+</body>
+</html>
